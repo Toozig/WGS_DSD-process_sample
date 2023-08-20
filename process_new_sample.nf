@@ -1,15 +1,9 @@
 params.inputDir= ''
 params.pathFile= ''
+params.outputDir = ''
+params.upload = false
 nextflow.enable.dsl=2
 
-
-log.info """
-        V C F - P R O C E S S E   P I P E L I N E 
-         inputDir: ${params.inputDir}
-         outputDir: ${params.processedOutputDir} 
-         pathFile  ${params.pathFile} 
-         """
-         .stripIndent()
 
 
 
@@ -38,10 +32,7 @@ def isVCFprocessed(vcfFileName){
 
 
 process compressVCF {
-   executor  'slurm'
-   cpus  4
-   memory  '8g'
-   time  '1:00:00'
+   label 'small_slurm'
     
    
    input:
@@ -73,7 +64,7 @@ process tbiVCF {
    
    sampleFileObj = file(sampleFile_path)
    sampleFileTbi = file("${sampleFile_path}.tbi")
-   // println sampleFile_path.toString()
+
    if (!sampleFileTbi.exists()) {
    """
     ln -s "${sampleFile_path}" .
@@ -118,7 +109,7 @@ process checkHgVersion {
 
 process processVCF {
     label "medium_slurm"
-    publishDir params.processedOutputDir, mode: 'copy'
+    publishDir params.curProcessedOutputDir, mode: 'copy'
     
     input:
     path sampleFile
@@ -131,38 +122,83 @@ process processVCF {
     """
     # Load necessary modules
     module load hurcs bcftools
-    process_new_sample.sh ${sampleFile} ${params.processedOutputDir} ${params.all_samples}
+    process_new_sample.sh ${sampleFile} ${params.curProcessedOutputDir} ${params.all_samples}
     """
+}
+
+process uploadData {
+  label "small_slurm"
+   tag 'upload'
+    
+    input:
+    path processedVCF 
+    path tbiFile
+    
+    script:
+    if (params.upload){
+        println "upload files"
+        """
+
+        ${params.DBXCLI} put $processedVCF $params.processedSamplesUploadDir
+        ${params.DBXCLI} put $tbiFile $params.processedSamplesUploadDir
+        """
+    }
+    else{
+        println "not uploading"
+        """
+            echo "not uploading"
+        """
+    }
 }
 
 
 
-
 workflow {
-//    workDir = file(params.inputDir)
-//    params.sampleName = workDir.simpleName
-//    listOfgz = file("${workDir}/**.vcf.gz").findAll {!isProcessed(it.Name)}
-//    listOfvcf = file("${workDir}/**.vcf").findAll {!isVCFprocessed(it.Name)}
+   workDir = file(params.inputDir)
+   params.sampleName = workDir.simpleName
+
+       // using default parameters if they werent provided
+    if (params.sample_file == ''){
+        sampleFile = params.all_samples
+    } else {
+        sampleFile = params.sample_file
+    }
+    if (params.outputDir == ''){
+        params.curProcessedOutputDir = params.processedOutputDir
+    }else {
+        params.curProcessedOutputDir =  params.outputDir
+    }
+
+
+    
+log.info """
+        V C F - P R O C E S S E   P I P E L I N E 
+         inputDir: ${params.inputDir}
+         outputDir: ${params.outputDir} 
+         """
+         .stripIndent()
+
+    
+
+   // creates channel for each vcf in the input dir, only if file was not processed before
+    listOfgz = file("${workDir}/**.vcf.gz").findAll {!isProcessed(it.Name)}
+    listOfvcf = file("${workDir}/**.vcf").findAll {!isVCFprocessed(it.Name)}
     
     
-//    vcf = Channel.from(listOfvcf.collect {it})
-//    gz = Channel.from(listOfgz.collect {it})
- //   if (listOfvcf.size() > 0){
- //      vcf = compressVCF(vcf)
- //   }
+    vcf = Channel.from(listOfvcf.collect {it})
+    gz = Channel.from(listOfgz.collect {it})
+    if (listOfvcf.size() > 0){
+      vcf = compressVCF(vcf)
+    }
  
-    myFile = file(params.pathFile)
-    allLines = myFile.readLines()
-    gz = Channel.fromList(allLines)
 
-   // both = vcf.mix(gz)
-   tbi = tbiVCF(gz)
-    checked =checkHgVersion(tbi)
-    processVCF(checked)
-   
-   //sample_file = processVCF(checkHgVersion(tbiVCF(gz).output_vcf)).sampleFile.collectFile()
-
-    
+    both = vcf.mix(gz)
+    tbi = tbiVCF(both)
+    checked = checkHgVersion(tbi)
+    processed = processVCF(checked)
+    if (params.upload){
+        uploadData(processed)
+    } 
 }
 
 

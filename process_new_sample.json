@@ -1,0 +1,4 @@
+{
+  "all_samples": "data/read_only/samples/processed/all_samples.txt",
+  "processedOutputDir" : "data/read_only/samples/processed"
+}

@@ -19,13 +19,11 @@ echo $sampleFile
 # Remove 'INFO/AF' annotations, normalize variants, and save the processed VCF as a compressed file
 bcftools annotate -x "INFO/AF" "$sampleFile" | \
     bcftools norm -m +any | \
-    bcftools norm -m -any -Oz  -o "${outputDir}/processed.${sampleFile}"
+    bcftools norm -m -any -Oz  -o "processed.${sampleFile}"
 
-
-exit 0
 
 # Index the processed VCF using tabix
-tabix -p vcf "${outputDir}/processed.${sampleFile}"
+tabix -p vcf "processed.${sampleFile}"
 
 # Append the path of the processed file to the sample list file
 echo "${outputDir}/processed.${sampleFile}" >> "$sampleListFile"

@@ -9,7 +9,8 @@ sampleFile=$1
 
 # Use bcftools to extract and inspect the headers of the sample VCF file
 # Check if 'hg38', 'GRCh38', or 'HG38' appear in any of the headers
-header_check=$(bcftools view -h "${sampleFile}" | egrep -c 'hg38|GRCh38|HG38')
+header_check=$(bcftools view -h "${sampleFile}" | 
+    egrep -c 'hg38|GRCh38|HG38')
 
 # If 'hg38' or related terms are not found in the header, exit with an error message
 if [[ $header_check -eq 0 ]]; then

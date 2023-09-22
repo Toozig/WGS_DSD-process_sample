@@ -1,8 +1,9 @@
-params.inputDir= ''
-params.pathFile= ''
+params.inputDir = ''
+params.pathFile = ''
+params.sample_file  = ''
 params.outputDir = ''
 params.upload = false
-nextflow.enable.dsl=2
+nextflow.enable.dsl = 2
 
 
 
@@ -50,36 +51,21 @@ process compressVCF {
 
 
 process tbiVCF {
-    errorStrategy 'ignore'
+    // errorStrategy 'ignore'
     label "small_slurm"
    
     input:
-    val sampleFile_path
+    path sampleFileObj
    
     output:
-    path "${sampleFile_path.split('/')[-1]}", emit: output_vcf
-    path "${sampleFile_path.split('/')[-1]}.tbi"
+    path "${sampleFileObj.toString().split('/')[-1]}", emit: output_vcf
+    path "${sampleFileObj.toString().split('/')[-1]}.tbi"
    
    script:
-   
-   sampleFileObj = file(sampleFile_path)
-   sampleFileTbi = file("${sampleFile_path}.tbi")
 
-   if (!sampleFileTbi.exists()) {
    """
-    ln -s "${sampleFile_path}" .
-    tabix -p vcf "${sampleFileObj}"
+    tabix -f -p vcf "${sampleFileObj}"
    """
-   }
-   
-   
-   else{
-   """
-   ln -s "${sampleFile_path}.tbi" .
-   ln -s "${sampleFile_path}" .
-   echo ${sampleFile_path} have tbi
-   """
-   }
 
 }
 
@@ -174,7 +160,7 @@ workflow {
 log.info """
         V C F - P R O C E S S E   P I P E L I N E 
          inputDir: ${params.inputDir}
-         outputDir: ${params.outputDir} 
+         outputDir: ${params.curProcessedOutputDir} 
          """
          .stripIndent()
 

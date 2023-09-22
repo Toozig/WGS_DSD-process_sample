@@ -15,11 +15,14 @@ outputDir=$2            # Directory to store the processed VCF file
 sampleListFile=$3       # File to store the list of processed sample paths
 
 
-
+echo $sampleFile
 # Remove 'INFO/AF' annotations, normalize variants, and save the processed VCF as a compressed file
 bcftools annotate -x "INFO/AF" "$sampleFile" | \
     bcftools norm -m +any | \
-    bcftools norm -m -any -Oz -o "${outputDir}/processed.${sampleFile}"
+    bcftools norm -m -any -Oz  -o "${outputDir}/processed.${sampleFile}"
+
+
+exit 0
 
 # Index the processed VCF using tabix
 tabix -p vcf "${outputDir}/processed.${sampleFile}"

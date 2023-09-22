@@ -1,6 +1,6 @@
 {
-  "all_samples": "data/read_only/samples/processed/all_samples.txt",
-  "processedOutputDir" : "data/read_only/samples/processed",
+  "all_samples": "/cs/labs/michall/toozig/good/process_sample/data/read_only/samples/processed/all_samples.txt",
+  "processedOutputDir" : "/cs/labs/michall/toozig/good/process_sample/data/read_only/samples/processed",
   "processedSamplesUploadDir" : "Nitzan_Gonen_lab/Joint_projects/WGS_on_DSD/data/read_only/samples/processed",
   "DBXCLI" : "/cs/usr/toozig/dbxcli"
 }

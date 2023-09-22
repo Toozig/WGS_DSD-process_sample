@@ -29,7 +29,7 @@ This pipeline processes new VCF files to assess and analyze them for suspicious 
 ## Running the Pipeline
 
 ```bash
-~/nextflow run process_new_sample.nf --inputDir NEW/VCF/FILES/DIR --params-file process_new_sample.json --upload true -c process-selector.config
+~/nextflow run process_new_sample.nf --inputDir NEW/VCF/FILES/DIR -params-file process_new_sample.json --upload true -c process-selector.config
 ```
 
 Replace `NEW/VCF/FILES/DIR` with the actual path to the directory containing your VCF files. Adjust other parameters and options as needed.

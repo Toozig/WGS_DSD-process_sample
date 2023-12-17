@@ -125,8 +125,8 @@ process uploadData {
         println "upload files"
         """
 
-        ${params.DBXCLI} put $processedVCF $params.processedSamplesUploadDir
-        ${params.DBXCLI} put $tbiFile $params.processedSamplesUploadDir
+        ${params.DBXCLI} put $processedVCF "${params.processedSamplesUploadDir}/${processedVCF}"
+        ${params.DBXCLI} put $tbiFile "${params.processedSamplesUploadDir}/${tbiFile}"
         """
     }
     else{

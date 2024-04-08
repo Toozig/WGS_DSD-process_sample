@@ -84,9 +84,10 @@ process checkHgVersion {
     path sampleFile
     
     script:
+
     """
     # Load necessary modules
-    module load hurcs bcftools
+
 
     hg38Checker.sh ${sampleFile}
     """
@@ -107,8 +108,8 @@ process processVCF {
    script:
     """
     # Load necessary modules
-    module load hurcs bcftools
-    process_new_sample.sh ${sampleFile} ${params.curProcessedOutputDir} ${params.all_samples}
+
+    process_new_sample.sh ${sampleFile} ${params.curProcessedOutputDir} ${baseDir}/${params.all_samples}
     """
 }
 
@@ -122,7 +123,7 @@ process uploadData {
     
     script:
     if (params.upload){
-        println "upload files"
+        println "upload files ${processedVCF}"
         """
 
         ${params.DBXCLI} put $processedVCF "${params.processedSamplesUploadDir}/${processedVCF}"
@@ -145,12 +146,13 @@ workflow {
 
        // using default parameters if they werent provided
     if (params.sample_file == ''){
-        sampleFile = params.all_samples
+        sampleFile = "${baseDir}/${params.all_samples}" // do it for the rest
+        println "using default sample file - ${sampleFile}"
     } else {
         sampleFile = params.sample_file
     }
     if (params.outputDir == ''){
-        params.curProcessedOutputDir = params.processedOutputDir
+        params.curProcessedOutputDir = "${baseDir}/${params.processedOutputDir}"
     }else {
         params.curProcessedOutputDir =  params.outputDir
     }
@@ -169,7 +171,7 @@ log.info """
    // creates channel for each vcf in the input dir, only if file was not processed before
     listOfgz = file("${workDir}/**.vcf.gz").findAll {!isProcessed(it.Name)}
     listOfvcf = file("${workDir}/**.vcf").findAll {!isVCFprocessed(it.Name)}
-    
+    println listOfgz
     
     vcf = Channel.from(listOfvcf.collect {it})
     gz = Channel.from(listOfgz.collect {it})

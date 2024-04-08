@@ -17,3 +17,5 @@ if [[ $header_check -eq 0 ]]; then
     echo "'hg38', 'GRCh38', or 'HG38' does not appear in the header of the sample file."
     exit 1
 fi
+
+echo "Header check passed: 'hg38', 'GRCh38', or 'HG38' found in the header of the sample file."
